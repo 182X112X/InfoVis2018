@@ -105,7 +105,7 @@ function main()
         var intersects = raycaster.intersectObject( cube );
         if ( intersects.length > 0 )
         {
-            intersects[0].face.color.setRGB( 1, 0, 0 );
+            intersects[0].face.color.setRGB( 0, 2, 1 );
             intersects[0].object.geometry.colorsNeedUpdate = true;
         }
     }
