@@ -1,0 +1,148 @@
+<html>
+
+<head>
+	<title>Final Task</title>
+</head>
+<body style="margin:0">
+	<div id="display" style="width: 80%; float: left;">
+	</div>
+	<div id="controller" style="width:20%; float:left;">
+		<!-- Isovalue -->
+		<label id="label_isovalue" style="font-family:Arial;"></label>
+		<input type="range" min="0" max="1" step="0.01" value="0.5" id="isovalue"/>
+		<button id="isovalue_button" style="font-family=Arial;">Apply</button><br><br>
+		<!-- Lambertian Reflection -->
+		<label id="label" style="font-family:Arial;">Lambertian Reflection:</label><br>
+		<button id="lambert_gouraud_button" style="font-family=Arial;">Gouraud Shading</button><br>
+		<!-- Phong Reflection -->
+		<label id="label" style="font-family:Arial;">Phong Reflection:</label><br>
+		<button id="phong_gouraud_button" style="font-family=Arial;">Gouraud Shading</button><br>
+		<!-- Set size -->
+		<label id="label_size_x" style="font-family:Arial;"></label>
+		<input type="range" min="10" max="200" step="5" value="0.5" id="dimx"/><br>
+		<label id="label_size_y" style="font-family:Arial;"></label>
+		<input type="range" min="10" max="200" step="5" value="0.5" id="dimy"/><br>
+		<label id="label_size_z" style="font-family:Arial;"></label>
+		<input type="range" min="10" max="200" step="5" value="0.5" id="dimz"/><br>
+		<button id="set_size_button" style="font-family=Arial;">Apply</button><br>
+		<!-- slice plane -->
+		<label id="label" style="font-family:Arial;">Slice Plane:</label><br>
+		<button id="slice_button" style="font-family=Arial;">PUSH</button><br>
+		<!-- clear -->
+		<label id="label" style="font-family:Arial;">Clear:</label><br>
+		<button id="clear_button" style="font-family=Arial;">PUSH</button><br>
+	</div>
+
+	<script type="x-shader/x-vertex" id="lambert_gouraud.vert">
+		varying vec3 point_color;
+		varying vec4 point_position;
+		varying vec3 normal_vector;
+		uniform vec3 light_position;
+		uniform vec3 camera_position;
+
+		vec3 LambertianReflection( vec3 C, vec3 L, vec3 N )
+		{
+			float ka = 0.3;
+			float kd = 0.5;
+
+			float dd = dot( N, L );
+			float Ia = ka;
+			float Id = kd * dd;
+			return C * ( Ia + Id );
+		}
+
+
+		void main()
+		{
+			point_position = modelViewMatrix * vec4( position, 1.0 );
+			normal_vector = normalMatrix * normal;
+
+			vec3 C = color;
+			vec3 L = normalize( light_position - point_position.xyz );
+			vec3 N = normalize( normal_vector );
+			vec3 V = normalize( camera_position - point_position.xyz );
+
+			#if defined( Lambert )
+			point_color = LambertianReflection( C, L, N );
+			#else
+			point_color = C;
+			#endif
+
+			gl_Position = projectionMatrix * point_position;
+		}
+	</script>
+
+	<script type="x-shader/x-fragment" id="lambert_gouraud.frag">
+		varying vec3 point_color;
+
+		void main()
+		{
+			gl_FragColor = vec4( point_color, 1.0 );
+		}
+	</script>
+	
+	<script type="x-shader/x-vertex" id="phong_gouraud.vert">
+		varying vec3 point_color;
+		varying vec4 point_position;
+		varying vec3 normal_vector;
+		uniform vec3 light_position;
+		uniform vec3 camera_position;
+
+
+		vec3 PhongReflection( vec3 C, vec3 L, vec3 N, vec3 V )
+		{
+			float ka = 0.3;
+			float kd = 0.5;
+			float ks = 0.8;
+			float n = 50.0;
+
+			vec3 R = reflect( -L, N );
+			float dd = dot( N, L );
+			float ds = 0.0;
+			if ( dd > 0.0 )
+			{
+				ds = pow( dot( R, V ), n );
+			}
+
+			float Ia = ka;
+			float Id = kd * dd;
+			float Is = ks * ds;
+			return C * ( Ia + Id + Is );
+		}
+
+
+
+		void main()
+		{
+			point_position = modelViewMatrix * vec4( position, 1.0 );
+			normal_vector = normalMatrix * normal;
+
+			vec3 C = color;
+			vec3 L = normalize( light_position - point_position.xyz );
+			vec3 N = normalize( normal_vector );
+			vec3 V = normalize( camera_position - point_position.xyz );
+
+			point_color = PhongReflection( C, L, N, V );
+			gl_Position = projectionMatrix * point_position;
+		}
+	</script>
+
+	<script type="x-shader/x-fragment" id="phong_gouraud.frag">
+		varying vec3 point_color;
+
+		void main()
+		{
+			gl_FragColor = vec4( point_color, 1.0 );
+		}
+	</script>
+	<script src="three.min.js"></script>
+	<script src="TrackballControls.js"></script>
+	<script src="KVS.min.js"></script>
+	<script src="KVS2THREE.min.js"></script>
+	<script src="KVSLobsterData.js"></script>
+	<script src="final_main2.js"></script>
+	<script src="Isosurfaces.js"></script>
+	<script>main()</script>
+</body>
+
+</html>
